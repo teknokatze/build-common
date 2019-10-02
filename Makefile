@@ -1,3 +1,3 @@
 bootstrap:
-	ln -sf configure ../configure
-	ln -sf configure.py ../configure.py
+	cd .. && ln -sf build-scripts/configure configure
+	cd .. && ln -sf build-scripts/configure.py configure.py
