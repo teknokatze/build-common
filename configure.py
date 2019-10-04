@@ -36,42 +36,41 @@ def _read_prefix():
     logging.basicConfig(level=logging.DEBUG)
     logger = logging.getLogger(__name__)
 
+
+    if 'DEBUG' in os.environ:
+        logger.debug('PREFIX from argv')
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p",
+                        "--prefix",
+                        type=str,
+                        default="/usr/local",
+                        # required=True,
+                        help='Directory prefix for installation')
+    parser.add_argument("-y",
+                        "--yarn",
+                        type=str,
+                        required=True,
+                        help='name of yarn executable')
+    if 'DEBUG' in os.environ:
+        logger.debug('parser.parse_args step')
+    args = parser.parse_args()
+    if 'DEBUG' in os.environ:
+        logger.debug('%s', args)
     if 'PREFIX' in os.environ:
         if 'DEBUG' in os.environ:
             logger.debug('PREFIX from environment')
-        myprefix = os.environ.get('PREFIX')
-        if myprefix is not None and os.path.isdir(myprefix) is True:
+        p_myprefix = os.environ.get('PREFIX')
+        if p_myprefix is not None and os.path.isdir(p_myprefix) is True:
             if 'DEBUG' in os.environ:
-                logger.debug('PREFIX from environment: %s', myprefix)
-            return myprefix
-
+                logger.debug('PREFIX from environment: %s', p_myprefix)
+            myprefix = p_myprefix
     else:
-        if 'DEBUG' in os.environ:
-            logger.debug('PREFIX from argv')
-        parser = argparse.ArgumentParser()
-        parser.add_argument("-p",
-                            "--prefix",
-                            type=str,
-                            default="/usr/local",
-                            # required=True,
-                            help='Directory prefix for installation')
-        parser.add_argument("-y",
-                            "--yarn",
-                            type=str,
-                            required=True,
-                            help='name of yarn executable')
-        if 'DEBUG' in os.environ:
-            logger.debug('parser.parse_args step')
-        args = parser.parse_args()
-        if 'DEBUG' in os.environ:
-            logger.debug('%s', args)
         myprefix = args.prefix
-        yarnexe = args.yarn
-        if 'DEBUG' in os.environ:
-            logger.debug('%s', repr(myprefix))
-        # if args.prefix is not None and os.path.isdir(myprefix) is True:
-        if args.prefix and os.path.isdir(myprefix) is True:
-            return [myprefix, yarnexe];
+    yarnexe = args.yarn
+    if 'DEBUG' in os.environ:
+        logger.debug('%s', repr(myprefix))
+    if args.prefix and os.path.isdir(myprefix) is True:
+        return [myprefix, yarnexe];
 
 def main():
     # mylist = str(_read_prefix())
