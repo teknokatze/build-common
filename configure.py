@@ -147,7 +147,8 @@ def main():
     _tool_node()
     posixlist = _tool_posix()
     for x in range(len(posixlist)):
-        print(posixlist[x] + "\n")
+        if x is not '':
+            print(posixlist[x] + "\n")
 
 
 main()
