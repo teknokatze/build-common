@@ -126,13 +126,15 @@ def _read_prefix():
             myprefix = p_myprefix
     elif args.prefix:
         myprefix = args.prefix
+    else:
+        myprefix = parser.get_default('prefix')
     if args.yarn is not None:
         yarnexe = args.yarn
     else:
         yarnexe = str(_tool_yarn())
     if 'DEBUG' in os.environ:
         logger.debug('%s', repr(myprefix))
-    if args.prefix and os.path.isdir(myprefix) is True:
+    if os.path.isdir(myprefix) is True:
         return [myprefix, yarnexe];
 
 def main():
