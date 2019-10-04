@@ -74,52 +74,10 @@ fi
 PYTHON=$($python -c 'import sys; print(sys.executable)')
 #echo $PYTHON
 
-if ! existence node; then
-    echo 'Error: node executable not found.'
-    echo 'If you are using Linux, Ubuntu or Debian, try installing the'
-    echo 'node-legacy package or symlink node to nodejs.'
-else
-    node_version=$(node --version)
-    #echo "Using node ${node_version}"
-    if ! node -p 'process.exit(!(/v([0-9]+)/.exec(process.version)[1] >= 4))'; then
-        echo 'Your node version is too old, use Node 4.x or newer'
-        exit 1
-    fi
-fi
-
-if existence yarn; then
-    if yarn help 2>&1 | grep "No such file or directory"; then
-        echo "ERROR: wrong yarn binary installed, please remove the"
-        echo "ERROR: conflicting binary before continuing."
-        if existence cmdtest; then
-            echo "WARNING: cmdtest is installed, this can lead"
-            echo "WARNING: to know issues with yarn."
-        fi
-        exit 1
-    fi
-    myyarn="yarn"
-elif existence yarnpkg; then
-    myyarn="yarnpkg"
-else
-    echo 'ERROR: yarn missing. See https://yarnpkg.com/en/docs/install'
-    exit 1
-fi
-
-# for the weird systems and sandboxes, only as a anotice.
-# make will fail anyway.
-if ! existence find; then
-    echo "INFO: find(1) is missing"
-fi
-if ! existence xargs; then
-    echo "INFO: xargs(1) is missing"
-fi
-if ! existence msgmerge; then
-    echo "INFO: msgmerge(1) is missing"
-fi
 
 # Call configure.py, assuming all went well.
 # $1 is read by configure.py as the prefix.
 # If $1 is empty, the python script checks the
 # environment for PREFIX. We might need more
 # variables and switches, such as DESTDIR.
-$PYTHON ./configure.py --yarn=$myyarn $@
+$PYTHON ./configure.py $@

@@ -22,6 +22,9 @@ import argparse
 import os
 import sys
 import logging
+from distutils.spawn import find_executable
+import subprocess
+from subprocess import Popen
 
 # This script so far generates config.mk.
 # The only value it produces is prefix,
@@ -32,6 +35,56 @@ import logging
 # TODO: Also respect DESTDIR ($PREFIX/$DESTDIR/rest).
 
 
+def _existence(name):
+    return find_executable(name) is not None
+
+
+def _tool_version(name):
+    return subprocess.getstatusoutput(name)[1]
+
+
+def _tool_node():
+    if _existence('node') is None:
+        sys.exit('Error: node executable not found.\nIf you are using Linux, Ubuntu or Debian, try installing the\nnode-legacy package or symlink node to nodejs.')
+    else:
+        if subprocess.getstatusoutput("node -p 'process.exit(!(/v([0-9]+)/.exec(process.version)[1] >= 4))'")[1] is '':
+            # and exit(1) here?
+            sys.exit('Your node version is too old, use Node 4.x or newer')
+        else:
+            node_version = _tool_version("node --version")
+            return f"Using Node version {node_version}"
+
+
+def _tool_yarn():
+    if _existence('yarn'):
+        p1 = Popen(['yarn', 'help'], stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+        p2 = Popen(['grep', 'No such file or directory'], stdin=p1.stdout, stdout=subprocess.PIPE)
+        p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits
+        output = p2.communicate()[0]
+        if output is b'':
+            if _existence('cmdtest'):
+                print('WARNING: cmdtest is installed, this can lead\nto know issues with yarn.')
+            sys.exit('ERROR: wrong yarn binary installed, please remove the\nconflicting binary before continuing.')
+        return 'yarn'
+    elif _existence('yarnpkg'):
+        return 'yarnpkg'
+    else:
+        sys.exit('ERROR: yarn missing. See https://yarnpkg.com/en/docs/install\n')
+
+
+def _tool_posix():
+    tool_find = _existence('find')
+    if tool_find is None:
+        msg_find = 'prerequiste find(1) not found.'
+    tool_xargs = _existence('xargs')
+    if tool_xargs is None:
+        msg_xargs = 'prerequiste xargs(1) not found.'
+    tool_msgmerge = _existence('msgmerge')
+    if tool_msgmerge is None:
+        msg_msgmerge = 'prerequiste msgmerge(1) not found.'
+    return [msg_find, msg_xargs, msg_msgmerge]
+
+
 def _read_prefix():
     logging.basicConfig(level=logging.DEBUG)
     logger = logging.getLogger(__name__)
@@ -40,16 +93,14 @@ def _read_prefix():
     if 'DEBUG' in os.environ:
         logger.debug('PREFIX from argv')
     parser = argparse.ArgumentParser()
-    parser.add_argument("-p",
-                        "--prefix",
+    parser.add_argument('-p',
+                        '--prefix',
                         type=str,
-                        default="/usr/local",
-                        # required=True,
+                        default='/usr/local',
                         help='Directory prefix for installation')
-    parser.add_argument("-y",
-                        "--yarn",
+    parser.add_argument('-y',
+                        '--yarn',
                         type=str,
-                        required=True,
                         help='name of yarn executable')
     if 'DEBUG' in os.environ:
         logger.debug('parser.parse_args step')
@@ -66,14 +117,16 @@ def _read_prefix():
             myprefix = p_myprefix
     else:
         myprefix = args.prefix
-    yarnexe = args.yarn
+    if args.yarn is not None:
+        yarnexe = args.yarn
+    else:
+        yarnexe = str(_tool_yarn())
     if 'DEBUG' in os.environ:
         logger.debug('%s', repr(myprefix))
     if args.prefix and os.path.isdir(myprefix) is True:
         return [myprefix, yarnexe];
 
 def main():
-    # mylist = str(_read_prefix())
     mylist = _read_prefix()
     myprefix = mylist[0]
     yarnexe = mylist[1]
@@ -82,6 +135,10 @@ def main():
                   f'prefix={myprefix}\n',
                   f'yarnexe={yarnexe}\n'])
     f.close()
+    _tool_node()
+    posixlist = _tool_posix()
+    for x in range(len(posixlist)):
+        print(posixlist[x] + "\n")
 
 
 main()
