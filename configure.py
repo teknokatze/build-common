@@ -50,7 +50,7 @@ def _read_prefix():
                             "--prefix",
                             type=str,
                             default="/usr/local",
-                            required=True,
+                            # required=True,
                             help='Directory prefix for installation')
         parser.add_argument("-y",
                             "--yarn",
