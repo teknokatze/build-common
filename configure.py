@@ -144,7 +144,7 @@ def main():
                   f'prefix={myprefix}\n',
                   f'yarnexe={yarnexe}\n'])
     f.close()
-    _tool_node()
+    print(_tool_node())
     posixlist = _tool_posix()
     for x in range(len(posixlist)):
         if x is not '':
