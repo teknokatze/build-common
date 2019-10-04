@@ -68,7 +68,7 @@ def _read_prefix():
         myprefix = args.prefix
         yarnexe = args.yarn
         if 'DEBUG' in os.environ:
-            repr(myprefix)
+            logger.debug('%s', repr(myprefix))
         # if args.prefix is not None and os.path.isdir(myprefix) is True:
         if args.prefix and os.path.isdir(myprefix) is True:
             return [myprefix, yarnexe];
