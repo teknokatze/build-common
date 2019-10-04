@@ -138,8 +138,11 @@ def _read_prefix():
         yarnexe = str(_tool_yarn())
     if 'DEBUG' in os.environ:
         logger.debug('%s', repr(myprefix))
-    if os.path.isdir(myprefix) is True:
-        return [myprefix, yarnexe];
+    # We should probably not check if the path exists
+    # because make will throw an error anyway or create
+    # it.
+    # if os.path.isdir(myprefix) is True:
+    return [myprefix, yarnexe];
 
 def main():
     mylist = _read_prefix()
