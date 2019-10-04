@@ -124,7 +124,7 @@ def _read_prefix():
             if 'DEBUG' in os.environ:
                 logger.debug('PREFIX from environment: %s', p_myprefix)
             myprefix = p_myprefix
-    else:
+    elif args.prefix:
         myprefix = args.prefix
     if args.yarn is not None:
         yarnexe = args.yarn
