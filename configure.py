@@ -76,12 +76,21 @@ def _tool_posix():
     tool_find = _existence('find')
     if tool_find is None:
         msg_find = 'prerequiste find(1) not found.'
+    else:
+        msg_find = ''
+
     tool_xargs = _existence('xargs')
     if tool_xargs is None:
         msg_xargs = 'prerequiste xargs(1) not found.'
+    else:
+        msg_xargs = ''
+
     tool_msgmerge = _existence('msgmerge')
     if tool_msgmerge is None:
         msg_msgmerge = 'prerequiste msgmerge(1) not found.'
+    else:
+        msg_msgmerge = ''
+
     return [msg_find, msg_xargs, msg_msgmerge]
 
 
