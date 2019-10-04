@@ -47,7 +47,7 @@ def _tool_node():
     if _existence('node') is None:
         sys.exit('Error: node executable not found.\nIf you are using Linux, Ubuntu or Debian, try installing the\nnode-legacy package or symlink node to nodejs.')
     else:
-        if subprocess.getstatusoutput("node -p 'process.exit(!(/v([0-9]+)/.exec(process.version)[1] >= 4))'")[1] is '':
+        if subprocess.getstatusoutput("node -p 'process.exit(!(/v([0-9]+)/.exec(process.version)[1] >= 4))'")[1] is not '':
             # and exit(1) here?
             sys.exit('Your node version is too old, use Node 4.x or newer')
         else:
