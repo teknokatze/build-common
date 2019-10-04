@@ -37,14 +37,17 @@ def _read_prefix():
     logger = logging.getLogger(__name__)
 
     if 'PREFIX' in os.environ:
-        # logger.debug('PREFIX from environment')
+        if 'DEBUG' in os.environ:
+            logger.debug('PREFIX from environment')
         myprefix = os.environ.get('PREFIX')
         if myprefix is not None and os.path.isdir(myprefix) is True:
-            # logger.debug('PREFIX from environment: %s', myprefix)
+            if 'DEBUG' in os.environ:
+                logger.debug('PREFIX from environment: %s', myprefix)
             return myprefix
 
     else:
-        # logger.debug('PREFIX from argv')
+        if 'DEBUG' in os.environ:
+            logger.debug('PREFIX from argv')
         parser = argparse.ArgumentParser()
         parser.add_argument("-p",
                             "--prefix",
@@ -57,9 +60,11 @@ def _read_prefix():
                             type=str,
                             required=True,
                             help='name of yarn executable')
-        # logger.debug('parser.parse_args step')
+        if 'DEBUG' in os.environ:
+            logger.debug('parser.parse_args step')
         args = parser.parse_args()
-        # logger.debug('%s', args)
+        if 'DEBUG' in os.environ:
+            logger.debug('%s', args)
         myprefix = args.prefix
         yarnexe = args.yarn
         # if args.prefix is not None and os.path.isdir(myprefix) is True:
