@@ -125,8 +125,12 @@ def _read_prefix():
                 logger.debug('PREFIX from environment: %s', p_myprefix)
             myprefix = p_myprefix
     elif args.prefix:
+        if 'DEBUG' in os.environ:
+            logger.debug('PREFIX from args.prefix')
         myprefix = args.prefix
     else:
+        if 'DEBUG' in os.environ:
+            logger.debug('PREFIX from args.prefix default value')
         myprefix = parser.get_default('prefix')
     if args.yarn is not None:
         yarnexe = args.yarn
