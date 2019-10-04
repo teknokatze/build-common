@@ -37,10 +37,10 @@ def _read_prefix():
     logger = logging.getLogger(__name__)
 
     if 'PREFIX' in os.environ:
-        logger.debug('PREFIX from environment')
+        # logger.debug('PREFIX from environment')
         myprefix = os.environ.get('PREFIX')
         if myprefix is not None and os.path.isdir(myprefix) is True:
-            logger.debug('PREFIX from environment: %s', myprefix)
+            # logger.debug('PREFIX from environment: %s', myprefix)
             return myprefix
 
     else:
