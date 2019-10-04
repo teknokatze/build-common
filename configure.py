@@ -124,7 +124,7 @@ def _read_prefix():
             if 'DEBUG' in os.environ:
                 logger.debug('PREFIX from environment: %s', p_myprefix)
             myprefix = p_myprefix
-    elif args.prefix:
+    elif args.prefix is not '/usr/local':
         if 'DEBUG' in os.environ:
             logger.debug('PREFIX from args.prefix')
         myprefix = args.prefix
