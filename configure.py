@@ -73,31 +73,26 @@ def _tool_yarn():
 
 
 def _tool_posix():
+    messages = []
+
     tool_find = _existence('find')
     if tool_find is None:
-        msg_find = 'prerequiste find(1) not found.'
-    else:
-        msg_find = ''
+        messages.append('prerequiste find(1) not found.')
 
     tool_xargs = _existence('xargs')
     if tool_xargs is None:
-        msg_xargs = 'prerequiste xargs(1) not found.'
-    else:
-        msg_xargs = ''
+        messages.append('prerequiste xargs(1) not found.')
 
     tool_msgmerge = _existence('msgmerge')
     if tool_msgmerge is None:
-        msg_msgmerge = 'prerequiste msgmerge(1) not found.'
-    else:
-        msg_msgmerge = ''
+        messages.append('prerequiste msgmerge(1) not found.')
 
-    return [msg_find, msg_xargs, msg_msgmerge]
+    return messages
 
 
 def _read_prefix():
     logging.basicConfig(level=logging.DEBUG)
     logger = logging.getLogger(__name__)
-
 
     if 'DEBUG' in os.environ:
         logger.debug('PREFIX from argv')
@@ -155,9 +150,8 @@ def main():
     f.close()
     print(_tool_node())
     posixlist = _tool_posix()
-    for x in range(len(posixlist)):
-        if x != '':
-            print(posixlist[x] + "\n")
+    for msg in posixlist:
+        print(posixlist[x])
 
-
-main()
+if __name__ == "__main__":
+    main()
