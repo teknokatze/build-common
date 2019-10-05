@@ -61,7 +61,7 @@ def _tool_yarn():
         p2 = Popen(['grep', 'No such file or directory'], stdin=p1.stdout, stdout=subprocess.PIPE)
         p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits
         output = p2.communicate()[0]
-        if output is b'':
+        if output is not b'':
             if _existence('cmdtest'):
                 print('WARNING: cmdtest is installed, this can lead\nto know issues with yarn.')
             sys.exit('ERROR: wrong yarn binary installed, please remove the\nconflicting binary before continuing.')
@@ -156,7 +156,7 @@ def main():
     print(_tool_node())
     posixlist = _tool_posix()
     for x in range(len(posixlist)):
-        if x is not '':
+        if x != '':
             print(posixlist[x] + "\n")
 
 
