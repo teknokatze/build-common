@@ -35,82 +35,121 @@ from subprocess import Popen
 # TODO: Also respect DESTDIR ($PREFIX/$DESTDIR/rest).
 
 
-def _existence(name):
+def existence(name):
     return find_executable(name) is not None
 
 
-def _tool_version(name):
+def tool_version(name):
     return subprocess.getstatusoutput(name)[1]
 
 
-def _tool_node():
-    if _existence('node') is None:
-        sys.exit('Error: node executable not found.\nIf you are using Linux, Ubuntu or Debian, try installing the\nnode-legacy package or symlink node to nodejs.')
+def tool_emscripten():
+    if _existence('emcc') is None:
+        return f"emscripten compiler not found"
     else:
-        if subprocess.getstatusoutput("node -p 'process.exit(!(/v([0-9]+)/.exec(process.version)[1] >= 4))'")[1] is not '':
-            # and exit(1) here?
+        emscripten_version = _tool_version('emcc --version')
+        return f"emscripten version {emscripten_version} found"
+
+
+# TODO: Extract python binary version suffix from
+# sys.executable ?
+def tool_pybabel():
+    if _existence('pybable'):
+        return 'pybable'
+    # pybable is not pybable:
+    # construct dictionary of possible binary names
+    # try for each key if _existence(value) checks out
+    # to be true.
+    # if true, return the matching name
+
+
+def tool_browser():
+    if 'BROWSER' in os.environ:
+        return os.environ.get('BROWSER')
+    elif _existence('firefox'):
+        return 'firefox'
+    elif _existence('chrome'):
+        return 'chrome'
+    elif _existence('chromium'):
+        return 'chromium'
+    else:
+        pass
+
+
+def tool_node():
+    if _existence('node') is None:
+        sys.exit(
+            'Error: node executable not found.\nIf you are using Ubuntu Linux or Debian Linux, try installing the\nnode-legacy package or symlink node to nodejs.'
+        )
+    else:
+        if subprocess.getstatusoutput(
+            "node -p 'process.exit(!(/v([0-9]+)/.exec(process.version)[1] >= 4))'"
+        )[1] is not '':
             sys.exit('Your node version is too old, use Node 4.x or newer')
         else:
             node_version = _tool_version("node --version")
             return f"Using Node version {node_version}"
 
 
-def _tool_yarn():
+def tool_yarn():
     if _existence('yarn'):
-        p1 = Popen(['yarn', 'help'], stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
-        p2 = Popen(['grep', 'No such file or directory'], stdin=p1.stdout, stdout=subprocess.PIPE)
-        p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits
-        output = p2.communicate()[0]
-        if output is b'':
+        p1 = subprocess.run(['yarn', 'help'],
+                            stderr=subprocess.STDOUT,
+                            stdout=subprocess.PIPE)
+        'No such file or directory'
+
+        if output is not b'':
             if _existence('cmdtest'):
-                print('WARNING: cmdtest is installed, this can lead\nto know issues with yarn.')
-            sys.exit('ERROR: wrong yarn binary installed, please remove the\nconflicting binary before continuing.')
+                print(
+                    'WARNING: cmdtest is installed, this can lead\nto know issues with yarn.'
+                )
+            sys.exit(
+                'ERROR: wrong yarn binary installed, please remove the\nconflicting binary before continuing.'
+            )
         return 'yarn'
     elif _existence('yarnpkg'):
         return 'yarnpkg'
     else:
-        sys.exit('ERROR: yarn missing. See https://yarnpkg.com/en/docs/install\n')
+        sys.exit(
+            'ERROR: yarn missing. See https://yarnpkg.com/en/docs/install\n'
+        )
 
 
-def _tool_posix():
+def tool_posix():
+    messages = []
+
     tool_find = _existence('find')
     if tool_find is None:
-        msg_find = 'prerequiste find(1) not found.'
-    else:
-        msg_find = ''
+        messages.append('prerequisite find(1) not found.')
 
     tool_xargs = _existence('xargs')
     if tool_xargs is None:
-        msg_xargs = 'prerequiste xargs(1) not found.'
-    else:
-        msg_xargs = ''
+        messages.append('prerequisite xargs(1) not found.')
 
     tool_msgmerge = _existence('msgmerge')
     if tool_msgmerge is None:
-        msg_msgmerge = 'prerequiste msgmerge(1) not found.'
-    else:
-        msg_msgmerge = ''
+        messages.append('prerequisite msgmerge(1) not found.')
 
-    return [msg_find, msg_xargs, msg_msgmerge]
+    return messages
 
 
-def _read_prefix():
+def read_prefix():
     logging.basicConfig(level=logging.DEBUG)
     logger = logging.getLogger(__name__)
-
 
     if 'DEBUG' in os.environ:
         logger.debug('PREFIX from argv')
     parser = argparse.ArgumentParser()
-    parser.add_argument('-p',
-                        '--prefix',
-                        type=str,
-                        default='/usr/local',
-                        help='Directory prefix for installation')
-    parser.add_argument('-y',
-                        '--yarn',
-                        type=str,
-                        help='name of yarn executable')
+    parser.add_argument(
+        '-p',
+        '--prefix',
+        type=str,
+        default='/usr/local',
+        help='Directory prefix for installation'
+    )
+    parser.add_argument(
+        '-y', '--yarn', type=str, help='name of yarn executable'
+    )
     if 'DEBUG' in os.environ:
         logger.debug('parser.parse_args step')
     args = parser.parse_args()
@@ -138,26 +177,25 @@ def _read_prefix():
         yarnexe = str(_tool_yarn())
     if 'DEBUG' in os.environ:
         logger.debug('%s', repr(myprefix))
-    # We should probably not check if the path exists
-    # because make will throw an error anyway or create
-    # it.
-    # if os.path.isdir(myprefix) is True:
-    return [myprefix, yarnexe];
+    return [myprefix, yarnexe]
+
 
 def main():
     mylist = _read_prefix()
     myprefix = mylist[0]
     yarnexe = mylist[1]
+    mybrowser = _tool_browser()
     f = open('config.mk', 'w+')
-    f.writelines(['# this file is autogenerated by ./configure\n',
-                  f'prefix={myprefix}\n',
-                  f'yarnexe={yarnexe}\n'])
+    f.writelines([
+        '# this file is autogenerated by ./configure\n', f'prefix={myprefix}\n',
+        f'yarnexe={yarnexe}\n', f'RUN_BROWSER={mybrowser}\n'
+    ])
     f.close()
     print(_tool_node())
     posixlist = _tool_posix()
-    for x in range(len(posixlist)):
-        if x is not '':
-            print(posixlist[x] + "\n")
+    for msg in posixlist:
+        print(posixlist[msg])
 
 
-main()
+if __name__ == "__main__":
+    main()
