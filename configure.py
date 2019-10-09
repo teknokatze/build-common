@@ -63,6 +63,7 @@ def tool_pybabel():
     # if true, return the matching name
 
 
+# Far from ideal list.
 def tool_browser():
     if 'BROWSER' in os.environ:
         return os.environ.get('BROWSER')
