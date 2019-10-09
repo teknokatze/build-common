@@ -24,8 +24,7 @@ import sys
 import logging
 from distutils.spawn import find_executable
 import subprocess
-from subprocess import Popen
-import re
+
 """
 This application aims to replicate a small GNU Coding Standards
 configure script, taylored at projects in GNU Taler. We hope it
