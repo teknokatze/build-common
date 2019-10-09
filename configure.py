@@ -59,8 +59,8 @@ def tool_emscripten():
 def tool_pybabel():
     # No suffix. Would probably be cheaper to do this in
     # the dict as well.
-    if existence('pybable'):
-        return 'pybable'
+    if existence('pybabel'):
+        return 'pybabel'
     else:
         # Has suffix, try suffix. We know the names in advance,
         # so use a dictionary and iterate over it. Use enough names
