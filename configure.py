@@ -25,14 +25,20 @@ import logging
 from distutils.spawn import find_executable
 import subprocess
 from subprocess import Popen
-
-# This script so far generates config.mk.
-# The only value it produces is prefix,
-# which is either taken as the first argument
-# to this script, or as --prefix=, or read
-# from the environment variable PREFIX.
-#
-# TODO: Also respect DESTDIR ($PREFIX/$DESTDIR/rest).
+import re
+"""
+This application aims to replicate a small GNU Coding Standards
+configure script, taylored at projects in GNU Taler. We hope it
+can be of use outside of GNU Taler, hence it is dedicated to the
+public domain ('0BSD').
+It takes a couple of arguments on the commandline equivalent to
+configure by autotools, in addition some environment variables
+xan take precedence over the switches. In the absence of switches,
+/usr/local is assumed as the PREFIX.
+When  all data from tests are gathered, it generates a config.mk
+Makefile fragement, which is the processed by a Makefile (usually) in
+GNU Make format.
+"""
 
 
 def existence(name):
@@ -44,41 +50,63 @@ def tool_version(name):
 
 
 def tool_emscripten():
-    if _existence('emcc') is None:
-        return f"emscripten compiler not found"
-    else:
-        emscripten_version = _tool_version('emcc --version')
+    if existence('emcc'):
+        emscripten_version = tool_version('emcc --version')
         return f"emscripten version {emscripten_version} found"
+    else:
+        return f"emscripten compiler not found"
 
 
-# TODO: Extract python binary version suffix from
-# sys.executable ?
 def tool_pybabel():
-    if _existence('pybable'):
+    # No suffix. Would probably be cheaper to do this in
+    # the dict as well.
+    if existence('pybable'):
         return 'pybable'
-    # pybable is not pybable:
-    # construct dictionary of possible binary names
-    # try for each key if _existence(value) checks out
-    # to be true.
-    # if true, return the matching name
+    else:
+        # Has suffix, try suffix. We know the names in advance,
+        # so use a dictionary and iterate over it. Use enough names
+        # to safe updating this for another couple of years.
+        #
+        # Food for thought: If we only accept python 3.7 or higher,
+        # is checking pybabel + pybabel-3.[0-9]* too much and could
+        # be broken down to pybabel + pybabel-3.7 and later names?
+        version_dict = {
+            '3.0': 'pybabel-3.0',
+            '3.1': 'pybabel-3.1',
+            '3.2': 'pybabel-3.2',
+            '3.3': 'pybabel-3.3',
+            '3.4': 'pybabel-3.4',
+            '3.5': 'pybabel-3.5',
+            '3.6': 'pybabel-3.6',
+            '3.7': 'pybabel-3.7',
+            '3.8': 'pybabel-3.8',
+            '3.9': 'pybabel-3.9',
+            '4.0': 'pybabel-4.0',
+        }
+        for value in version_dict.values():
+            if existence(value):
+                return value
 
 
-# Far from ideal list.
 def tool_browser():
+    # TODO: read xdg-open value first.
+    browser_dict = {
+        'ice': 'icecat',
+        'ff': 'firefox',
+        'chg': 'chrome',
+        'ch': 'chromium',
+        'o': 'opera'
+    }
     if 'BROWSER' in os.environ:
         return os.environ.get('BROWSER')
-    elif _existence('firefox'):
-        return 'firefox'
-    elif _existence('chrome'):
-        return 'chrome'
-    elif _existence('chromium'):
-        return 'chromium'
     else:
-        pass
+        for value in browser_dict.values():
+            if existence(value):
+                return value
 
 
 def tool_node():
-    if _existence('node') is None:
+    if existence('node') is None:
         sys.exit(
             'Error: node executable not found.\nIf you are using Ubuntu Linux or Debian Linux, try installing the\nnode-legacy package or symlink node to nodejs.'
         )
@@ -88,27 +116,25 @@ def tool_node():
         )[1] is not '':
             sys.exit('Your node version is too old, use Node 4.x or newer')
         else:
-            node_version = _tool_version("node --version")
+            node_version = tool_version("node --version")
             return f"Using Node version {node_version}"
 
 
 def tool_yarn():
-    if _existence('yarn'):
+    if existence('yarn'):
         p1 = subprocess.run(['yarn', 'help'],
                             stderr=subprocess.STDOUT,
                             stdout=subprocess.PIPE)
-        'No such file or directory'
-
-        if output is not b'':
-            if _existence('cmdtest'):
+        if 'No such file or directory' in p1.stdout.decode('utf-8'):
+            if existence('cmdtest'):
                 print(
                     'WARNING: cmdtest is installed, this can lead\nto know issues with yarn.'
                 )
             sys.exit(
-                'ERROR: wrong yarn binary installed, please remove the\nconflicting binary before continuing.'
+                'ERROR: You seem to have the wrong kind of "yarn" installed, please remove the\nconflicting binary before continuing!'
             )
         return 'yarn'
-    elif _existence('yarnpkg'):
+    elif existence('yarnpkg'):
         return 'yarnpkg'
     else:
         sys.exit(
@@ -119,27 +145,25 @@ def tool_yarn():
 def tool_posix():
     messages = []
 
-    tool_find = _existence('find')
+    tool_find = existence('find')
     if tool_find is None:
         messages.append('prerequisite find(1) not found.')
 
-    tool_xargs = _existence('xargs')
+    tool_xargs = existence('xargs')
     if tool_xargs is None:
         messages.append('prerequisite xargs(1) not found.')
 
-    tool_msgmerge = _existence('msgmerge')
+    tool_msgmerge = existence('msgmerge')
     if tool_msgmerge is None:
         messages.append('prerequisite msgmerge(1) not found.')
 
     return messages
 
 
-def read_prefix():
+def main():
     logging.basicConfig(level=logging.DEBUG)
     logger = logging.getLogger(__name__)
 
-    if 'DEBUG' in os.environ:
-        logger.debug('PREFIX from argv')
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '-p',
@@ -149,51 +173,52 @@ def read_prefix():
         help='Directory prefix for installation'
     )
     parser.add_argument(
-        '-y', '--yarn', type=str, help='name of yarn executable'
+        '-yarn', '--with-yarn', type=str, help='name of yarn executable'
     )
-    if 'DEBUG' in os.environ:
-        logger.debug('parser.parse_args step')
+    parser.add_argument(
+        '-browser',
+        '--with-browser',
+        type=str,
+        help='name of your webbrowser executable'
+    )
+    parser.add_argument(
+        '-pybabel',
+        '--with-pybabel',
+        type=str,
+        help='name of your pybabel executable'
+    )
     args = parser.parse_args()
     if 'DEBUG' in os.environ:
         logger.debug('%s', args)
+
+    # get PREFIX
     if 'PREFIX' in os.environ:
-        if 'DEBUG' in os.environ:
-            logger.debug('PREFIX from environment')
         p_myprefix = os.environ.get('PREFIX')
         if p_myprefix is not None and os.path.isdir(p_myprefix) is True:
-            if 'DEBUG' in os.environ:
-                logger.debug('PREFIX from environment: %s', p_myprefix)
             myprefix = p_myprefix
     elif args.prefix is not '/usr/local':
-        if 'DEBUG' in os.environ:
-            logger.debug('PREFIX from args.prefix')
         myprefix = args.prefix
     else:
-        if 'DEBUG' in os.environ:
-            logger.debug('PREFIX from args.prefix default value')
         myprefix = parser.get_default('prefix')
-    if args.yarn is not None:
-        yarnexe = args.yarn
+
+    # get yarn executable
+    if args.with_yarn is not None:
+        yarnexe = args.with_yarn
     else:
-        yarnexe = str(_tool_yarn())
-    if 'DEBUG' in os.environ:
-        logger.debug('%s', repr(myprefix))
-    return [myprefix, yarnexe]
+        yarnexe = str(tool_yarn())
 
-
-def main():
-    mylist = _read_prefix()
-    myprefix = mylist[0]
-    yarnexe = mylist[1]
-    mybrowser = _tool_browser()
+    mybrowser = tool_browser()
+    mypybabel = tool_pybabel()
     f = open('config.mk', 'w+')
     f.writelines([
-        '# this file is autogenerated by ./configure\n', f'prefix={myprefix}\n',
-        f'yarnexe={yarnexe}\n', f'RUN_BROWSER={mybrowser}\n'
+        '# This mk fragment is autogenerated by configure.py\n',
+        f'prefix={myprefix}\n', f'yarnexe={yarnexe}\n',
+        f'RUN_BROWSER={mybrowser}\n', f'pybabel={mypybabel}\n'
     ])
     f.close()
-    print(_tool_node())
-    posixlist = _tool_posix()
+    print(tool_node())
+    print(tool_emscripten())
+    posixlist = tool_posix()
     for msg in posixlist:
         print(posixlist[msg])
 
