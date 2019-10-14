@@ -1,1 +1,14 @@
-shared build-system files for (some) parts of Taler.
+Shared build-system files for (some) parts of Taler.
+
+A repository using these build-system files should be structured as follows:
+
+<my-repository.git>
+- bootstrap (copied/adjusted from bootstrap.template)
+- build-system (directory containing build system "stuff")
+--| configure.py (copied/adjusted from bootstrap.template)
+--| taler-build-scripts (git submodule of taler-build-scripts)
+--| Makefile
+
+Makefile and configure.py can also be placed directly into the root of the
+repository.  However, this might lead to errors when "make" can be invoked
+before bootstrap and configure has been done.
