@@ -72,7 +72,6 @@ fi
 # or fail anyway once configure.py is invoked because we
 # don't have python if we reach the point to fail.
 PYTHON=$($python -c 'import sys; print(sys.executable)')
-#echo $PYTHON
 
 
 # Call configure.py, assuming all went well.
@@ -80,4 +79,4 @@ PYTHON=$($python -c 'import sys; print(sys.executable)')
 # If $1 is empty, the python script checks the
 # environment for PREFIX. We might need more
 # variables and switches, such as DESTDIR.
-$PYTHON ./configure.py $@
+exec "$PYTHON" ./configure.py $@
