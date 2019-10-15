@@ -1,13 +1,4 @@
-import sys
-from pathlib import Path
-
-base_dir = Path(__file__, "../build-system/taler-build-scripts").resolve()
-if not base_dir.exists():
-    print(
-        f"build system directory ({base_dir}) missing", file=sys.stderr
-    )
-    sys.exit(1)
-sys.path.insert(0, str(base_dir))
+# This configure.py.template file is in the public domain.
 
 from talerbuildconfig import *
 

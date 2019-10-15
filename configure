@@ -73,6 +73,14 @@ fi
 # don't have python if we reach the point to fail.
 PYTHON=$($python -c 'import sys; print(sys.executable)')
 
+scriptpath=build-system/taler-build-scripts
+
+if ! test -d "$scriptpath"; then
+  echo "fatal error: taler-build-scripts not found at $scriptpath" >&2
+  exit 1
+fi
+
+export PYTHONPATH="$scriptpath:${PYTHONPATH:-}"
 
 # Call configure.py, assuming all went well.
 # $1 is read by configure.py as the prefix.
