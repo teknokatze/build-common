@@ -48,7 +48,6 @@ if existence python3; then
         echo "*** At least python 3.7 is required for the buildsystem"
         exit 1
     fi
-fi
 # elif existence python3.1; then
 #     python="python3.1"
 # elif existence python3.2; then
