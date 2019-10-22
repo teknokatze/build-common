@@ -12,3 +12,20 @@ A repository using these build-system files should be structured as follows:
 Makefile and configure.py can also be placed directly into the root of the
 repository.  However, this might lead to errors when "make" can be invoked
 before bootstrap and configure has been done.
+
+
+directory structure:
+--------------------
+
+conf:
+- contains mixed configuration data, mostly for linters and editors
+
+sh:
+- contains shell script code in reusable, importable pieces,
+  usually one function per file and files named after their
+  function.
+  the sh/lib.sh folder contains library code.
+  the sh/bin.sh folder contains executable scripts which can be
+  used for various functions.
+  Current caveat: the files all have to be included. shell independent
+  detection of real pathnames is tricky.

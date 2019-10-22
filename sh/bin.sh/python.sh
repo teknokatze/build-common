@@ -31,21 +31,7 @@
 # SPDX-License-Identifier: 0BSD
 
 dir=$(dirname "$(readlink -f -- "$0")")
-. $dir/sh/lib.sh/existence.sh
-. $dir/sh/lib.sh/existence_python.sh
+. $dir/../lib.sh/existence.sh
+. $dir/../lib.sh/existence_python.sh
 
-scriptpath=build-system/taler-build-scripts
-
-if ! test -d "$scriptpath"; then
-  echo "fatal error: taler-build-scripts not found at $scriptpath" >&2
-  exit 1
-fi
-
-export PYTHONPATH="$scriptpath:${PYTHONPATH:-}"
-
-# Call configure.py, assuming all went well.
-# $1 is read by configure.py as the prefix.
-# If $1 is empty, the python script checks the
-# environment for PREFIX. We might need more
-# variables and switches, such as DESTDIR.
-exec "$PYTHON" ./configure.py $@
+exec "$PYTHON" $@
