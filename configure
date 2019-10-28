@@ -30,7 +30,9 @@
 #
 # SPDX-License-Identifier: 0BSD
 
-dir=$(dirname "$(readlink -f -- "$0")")
+# we invoke configure not as a symlink but as a copy,
+# so we have to use a fixed location for the repository!
+dir=$(dirname "$(readlink -f -- "$0")")/build-system/taler-build-scripts
 . $dir/sh/lib.sh/existence.sh
 . $dir/sh/lib.sh/existence_python.sh
 
