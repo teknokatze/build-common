@@ -213,6 +213,42 @@ class PyBabelTool(Tool):
                     return True
 
 
+class PythonTool(Tool):
+    # This exists in addition to the files in sh, so that
+    # the Makefiles can use this value instead.
+    name = "python"
+
+    def args(self, parser):
+        parser.add_argument(
+            "--with-python", type=str, help="name of the python executable"
+        )
+
+    def check(self, buildconfig):
+        # No suffix. Would probably be cheaper to do this in
+        # the dict as well.
+        if existence("python"):
+            buildconfig._set_tool("python", "python")
+            return True
+        else:
+            # Has suffix, try suffix. We know the names in advance,
+            # so use a dictionary and iterate over it. Use enough names
+            # to safe updating this for another couple of years.
+            #
+            # Food for thought: If we only accept python 3.7 or higher,
+            # is checking pybabel + pybabel-3.[0-9]* too much and could
+            # be broken down to pybabel + pybabel-3.7 and later names?
+            version_dict = {
+                "3.7": "python3.7",
+                "3.8": "python3.8",
+                "3.9": "python3.9",
+                "4.0": "python4.0",
+            }
+            for value in version_dict.values():
+                if existence(value):
+                    buildconfig._set_tool("python", value)
+                    return True
+
+
 class BrowserTool(Tool):
     name = "browser"
 
