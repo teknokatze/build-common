@@ -43,6 +43,8 @@ GNU Make format.
 """
 
 
+# TODO: We need a smallest version argument.
+
 class Tool(ABC):
     def args(self):
         ...
@@ -182,9 +184,12 @@ class PyBabelTool(Tool):
 
     def check(self, buildconfig):
         # No suffix. Would probably be cheaper to do this in
-        # the dict as well.
+        # the dict as well. We also need to check the python
+        # version it was build against (TODO).
         if existence("pybabel"):
-            buildconfig._set_tool("pybabel", "pybabel")
+            import babel
+            pybabel_version = babel.__version__
+            buildconfig._set_tool("pybabel", "pybabel", pybabel_version)
             return True
         else:
             # Has suffix, try suffix. We know the names in advance,
@@ -207,9 +212,12 @@ class PyBabelTool(Tool):
                 "3.9": "pybabel-3.9",
                 "4.0": "pybabel-4.0",
             }
-            for value in version_dict.values():
+            for key, value in version_dict.items():
                 if existence(value):
-                    buildconfig._set_tool("pybabel", value)
+                    # FIXME: This version reporting is slightly off
+                    # FIXME: and only maps to the suffix.
+                    pybabel_version = key
+                    buildconfig._set_tool("pybabel", value, pybabel_version)
                     return True
 
 
@@ -228,7 +236,8 @@ class PythonTool(Tool):
         # the dict as well. We need at least version 3.7.
         if existence("python"):
             if sys.version_info >= (3, 7):
-                buildconfig._set_tool("python", "python")
+                python3_version = sys.version[0:5]
+                buildconfig._set_tool("python", "python", python3_version)
                 return True
         else:
             # Has suffix, try suffix. We know the names in advance,
@@ -244,12 +253,14 @@ class PythonTool(Tool):
                 "3.9": "python3.9",
                 "4.0": "python4.0",
             }
-            for value in version_dict.values():
+            for key, value in version_dict.items():
                 if existence(value):
-                    buildconfig._set_tool("python", value)
+                    python3_version = key
+                    buildconfig._set_tool("python", value, python3_version)
                     return True
 
 
+# TODO: Make this really optional, not use a hack ("true").
 class BrowserTool(Tool):
     name = "browser"
 
@@ -265,6 +276,7 @@ class BrowserTool(Tool):
             "chg": "chrome",
             "ch": "chromium",
             "o": "opera",
+            "t": "true"
         }
         if "BROWSER" in os.environ:
             buildconfig._set_tool("browser", os.environ["BROWSER"])
