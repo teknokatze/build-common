@@ -289,7 +289,7 @@ class NodeJsTool(Tool):
             subprocess.getstatusoutput(
                 "node -p 'process.exit(!(/v([0-9]+)/.exec(process.version)[1] >= 4))'"
             )[1]
-            is not ""
+            != ""
         ):
             buildconfig._warn("your node version is too old, use Node 4.x or newer")
             return False
