@@ -23,6 +23,7 @@ from abc import ABC
 import argparse
 import os
 import sys
+import shlex
 import logging
 from distutils.spawn import find_executable
 import subprocess
@@ -234,11 +235,11 @@ class PythonTool(Tool):
     def check(self, buildconfig):
         # No suffix. Would probably be cheaper to do this in
         # the dict as well. We need at least version 3.7.
-        if existence("python") and (subprocess.check_output(["python", "--version"]).split()[1] >= b'3.7'):
+        if existence("python") and (shlex.split(subprocess.getstatusoutput("python --version")[1])[1] >= '3.7'):
             # python might not be python3. It might not even be
             # python 3.x.
-            python_version = subprocess.check_output(["python", "--version"]).split()[1]
-            if python_version >= b'3.7':
+            python_version = shlex.split(subprocess.getstatusoutput("python --version")[1])[1]
+            if python_version >= '3.7':
                 buildconfig._set_tool("python", "python", python_version)
                 return True
         else:
