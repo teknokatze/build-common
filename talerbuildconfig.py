@@ -225,10 +225,11 @@ class PythonTool(Tool):
 
     def check(self, buildconfig):
         # No suffix. Would probably be cheaper to do this in
-        # the dict as well.
+        # the dict as well. We need at least version 3.7.
         if existence("python"):
-            buildconfig._set_tool("python", "python")
-            return True
+            if sys.version_info >= (3, 7):
+                buildconfig._set_tool("python", "python")
+                return True
         else:
             # Has suffix, try suffix. We know the names in advance,
             # so use a dictionary and iterate over it. Use enough names
