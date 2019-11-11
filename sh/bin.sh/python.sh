@@ -30,7 +30,7 @@
 #
 # SPDX-License-Identifier: 0BSD
 
-dir=$(dirname "$(readlink -f -- "$0")")
+dir=$(dirname "$(readlink -- "$0")")
 . $dir/../lib.sh/existence.sh
 . $dir/../lib.sh/existence_python.sh
 
