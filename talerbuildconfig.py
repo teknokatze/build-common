@@ -62,6 +62,7 @@ class BuildConfig:
         self.tool_results = {}
         self.args = None
         self.prefix_enabled = False
+        self.variant_enabled = False
         self.configmk_enabled = False
 
     def add_tool(self, tool):
@@ -79,7 +80,7 @@ class BuildConfig:
 
     def enable_variant(self):
         """If enable, process the --variant argument."""
-        self.variant_enabled = False
+        self.variant_enabled = True
 
     def enable_configmk(self):
         """If enabled, output the config.mk makefile fragment."""
