@@ -77,6 +77,10 @@ class BuildConfig:
         """If enabled, process the --prefix argument."""
         self.prefix_enabled = True
 
+    def enable_variant(self):
+        """If enable, process the --variant argument."""
+        self.variant_enabled = False
+
     def enable_configmk(self):
         """If enabled, output the config.mk makefile fragment."""
         self.configmk_enabled = True
@@ -89,6 +93,13 @@ class BuildConfig:
                 type=str,
                 default="/usr/local",
                 help="Directory prefix for installation",
+            )
+        if self.variant_enabled:
+            parser.add_argument(
+                "--variant",
+                type=str,
+                default="",
+                help="Directory for installation",
             )
         for tool in self.tools:
             tool.args(parser)
