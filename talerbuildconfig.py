@@ -188,6 +188,48 @@ class EmscriptenTool:
             return True
         return False
 
+class PyToxTool(Tool):
+    name ="tox"
+
+    def args(self, parser):
+        parser.add_argument(
+            "--with-tox", type=str, help="name of the tox executable"
+        )
+
+    def check(self, buildconfig):
+        # No suffix. Would probably be cheaper to do this in
+        # the dict as well. We also need to check the python
+        # version it was build against (TODO).
+        if existence("tox"):
+            import tox
+            mypytox_version = tox.__version__
+            buildconfig._set_tool("tox", "tox", mypytox_version)
+            return True
+        else:
+            # Has suffix, try suffix. We know the names in advance,
+            # so use a dictionary and iterate over it. Use enough names
+            # to safe updating this for another couple of years.
+            version_dict = {
+                "3.0": "tox-3.0",
+                "3.1": "tox-3.1",
+                "3.2": "tox-3.2",
+                "3.3": "tox-3.3",
+                "3.4": "tox-3.4",
+                "3.5": "tox-3.5",
+                "3.6": "tox-3.6",
+                "3.7": "tox-3.7",
+                "3.8": "tox-3.8",
+                "3.9": "tox-3.9",
+                "4.0": "tox-4.0",
+            }
+            for key, value in version_dict.items():
+                if existence(value):
+                    # FIXME: This version reporting is slightly off
+                    # FIXME: and only maps to the suffix.
+                    mypytox_version = key
+                    buildconfig._set_tool("tox", value, mypytox_version)
+                    return True
+
 
 class PyBabelTool(Tool):
     name = "pybabel"
