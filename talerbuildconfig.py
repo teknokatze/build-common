@@ -226,7 +226,8 @@ class PyToxTool(Tool):
                 if existence(value):
                     # FIXME: This version reporting is slightly off
                     # FIXME: and only maps to the suffix.
-                    mypytox_version = key
+                    import tox
+                    mypytox_version = tox.__version__
                     buildconfig._set_tool("tox", value, mypytox_version)
                     return True
 
