@@ -231,6 +231,49 @@ class PyToxTool(Tool):
                     return True
 
 
+class YapfTool(Tool):
+    name ="yapf"
+
+    def args(self, parser):
+        parser.add_argument(
+            "--with-yapf", type=str, help="name of the yapf executable"
+        )
+
+    def check(self, buildconfig):
+        # No suffix. Would probably be cheaper to do this in
+        # the dict as well. We also need to check the python
+        # version it was build against (TODO).
+        if existence("yapf"):
+            import yapf
+            myyapf_version = yapf.__version__
+            buildconfig._set_tool("yapf", "yapf", myyapf_version)
+            return True
+        else:
+            # Has suffix, try suffix. We know the names in advance,
+            # so use a dictionary and iterate over it. Use enough names
+            # to safe updating this for another couple of years.
+            version_dict = {
+                "3.0": "yapf3.0",
+                "3.1": "yapf3.1",
+                "3.2": "yapf3.2",
+                "3.3": "yapf3.3",
+                "3.4": "yapf3.4",
+                "3.5": "yapf3.5",
+                "3.6": "yapf3.6",
+                "3.7": "yapf3.7",
+                "3.8": "yapf3.8",
+                "3.9": "yapf3.9",
+                "4.0": "yapf4.0",
+            }
+            for key, value in version_dict.items():
+                if existence(value):
+                    # FIXME: This version reporting is slightly off
+                    # FIXME: and only maps to the suffix.
+                    mypytox_version = key
+                    buildconfig._set_tool("yapf", value, mypytox_version)
+                    return True
+
+
 class PyBabelTool(Tool):
     name = "pybabel"
 
