@@ -264,13 +264,25 @@ class YapfTool(Tool):
                 "3.8": "yapf3.8",
                 "3.9": "yapf3.9",
                 "4.0": "yapf4.0",
+                "4.1": "yapf-3.0",
+                "4.2": "yapf-3.1",
+                "4.3": "yapf-3.2",
+                "4.4": "yapf-3.3",
+                "4.5": "yapf-3.4",
+                "4.6": "yapf-3.5",
+                "4.7": "yapf-3.6",
+                "4.8": "yapf-3.7",
+                "4.9": "yapf-3.8",
+                "5.0": "yapf-3.9",
+                "5.1": "yapf-4.0",
             }
             for key, value in version_dict.items():
                 if existence(value):
                     # FIXME: This version reporting is slightly off
                     # FIXME: and only maps to the suffix.
-                    mypytox_version = key
-                    buildconfig._set_tool("yapf", value, mypytox_version)
+                    import yapf
+                    myyapf_version = yapf.__version__
+                    buildconfig._set_tool("yapf", value, myyapf_version)
                     return True
 
 
