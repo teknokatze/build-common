@@ -18,10 +18,18 @@
 #
 # SPDX-License-Identifier: 0BSD
 
-# there is a function used in curl to replicate which(1), but
-# it uses too many other tools. this one uses command and in
-# gnunet so far has no reports about failures.
+errmsg=''
+
+# Check if shell supports builtin 'type'.
+if test -z "$errmsg"; then
+    if ! (eval 'type type') >/dev/null 2>&1
+    then
+        errmsg='Shell does not support type builtin'
+        exit 1
+    fi
+fi
+
 existence()
 {
-    command -v "$1" >/dev/null 2>&1
+    type "$1" >/dev/null 2>&1
 }
