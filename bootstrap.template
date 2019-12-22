@@ -11,4 +11,6 @@ if ! git --version >/dev/null; then
 fi
 
 git submodule update --init
+git submodule update --recursive --remote
+git submodule sync
 ln -sf build-system/taler-build-scripts/configure ./configure
