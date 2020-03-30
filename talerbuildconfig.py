@@ -19,6 +19,13 @@
 #
 # SPDX-License-Identifier: 0BSD
 
+import sys
+
+if not (sys.version_info.major == 3 and sys.version_info.minor >= 7):
+    print("This script requires Python 3.7 or higher!")
+    print("You are using Python {}.{}.".format(sys.version_info.major, sys.version_info.minor))
+    sys.exit(1)
+
 from abc import ABC
 import argparse
 import os
