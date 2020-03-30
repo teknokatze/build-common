@@ -35,6 +35,7 @@ import logging
 from distutils.spawn import find_executable
 import subprocess
 from dataclasses import dataclass
+import semver
 
 """
 This module aims to replicate a small GNU Coding Standards
@@ -49,6 +50,9 @@ When  all data from tests are gathered, it generates a config.mk
 Makefile fragement, which is the processed by a Makefile (usually) in
 GNU Make format.
 """
+
+# Should be incremented each time we add some functionality
+serialversion = 2
 
 
 # TODO: We need a smallest version argument.
@@ -116,9 +120,17 @@ class BuildConfig:
         for tool in self.tools:
             res = tool.check(self)
             if not res:
-                print(f"Error: tool {tool.name} not available")
+                print(f"Error: tool '{tool.name}' not available")
                 if hasattr(tool, "hint"):
                     print(f"Hint: {tool.hint}")
+                sys.exit(1)
+            if hasattr(tool, "version_spec"):
+                sv = semver.SimpleSpec(tool.version_spec)
+                path, version = self.tool_results[tool.name]
+                if not sv.match(semver.Version(version)):
+                    print(f"Error: Tool '{tool.name}' has version '{version}', but we require '{tool.version_spec}'")
+                    sys.exit(1)
+
 
         for tool in self.tools:
             path, version = self.tool_results[tool.name]
@@ -413,6 +425,9 @@ class NodeJsTool(Tool):
     name = "node"
     hint = "If you are using Ubuntu Linux or Debian Linux, try installing the\nnode-legacy package or symlink node to nodejs."
 
+    def __init__(self, version_spec):
+        self.version_spec = version_spec
+
     def args(self, parser):
         pass
 
@@ -427,7 +442,7 @@ class NodeJsTool(Tool):
         ):
             buildconfig._warn("your node version is too old, use Node 4.x or newer")
             return False
-        node_version = tool_version("node --version")
+        node_version = tool_version("node --version").lstrip("v")
         buildconfig._set_tool("node", "node", version=node_version)
         return True
 
